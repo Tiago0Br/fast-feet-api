@@ -19,5 +19,55 @@ model User {
   password String
   role     UserRole
 
+  orders Order[]
+
   @@map("users")
+}
+
+model Address {
+  id           String  @id @default(uuid())
+  zipcode      String
+  street       String
+  neighborhood String
+  complement   String?
+  state        String
+  city         String
+
+  recipient Recipient?
+
+  @@map("address")
+}
+
+model Recipient {
+  id        String @id @default(uuid())
+  name      String
+  addressId String @unique @map("address_id")
+
+  address Address @relation(fields: [addressId], references: [id])
+  orders  Order[]
+
+  @@map("recipients")
+}
+
+enum OrderStatus {
+  AWAITING
+  COLLECTED
+  DELIVERED
+  RETURNED
+}
+
+model Order {
+  id               String      @id @default(uuid())
+  status           OrderStatus
+  publishedAt      DateTime    @default(now()) @map("published_at")
+  collectedAt      DateTime?   @map("collected_at")
+  deliveredAt      DateTime?   @map("delivered_at")
+  returnedAt       DateTime?   @map("returned_at")
+  recipientId      String      @map("recipient_id")
+  deliveryPersonId String      @map("delivery_person_id")
+
+  recipient      Recipient @relation(fields: [recipientId], references: [id])
+  deliveryPerson User      @relation(fields: [deliveryPersonId], references: [id])
+
+  @@map("orders")
 }
